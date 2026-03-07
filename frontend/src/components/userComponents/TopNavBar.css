@@ -1,0 +1,149 @@
+.navbar{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding:10px 20px;
+    border-bottom: 1px solid #ddd;
+}
+.logo img{
+    width: 40px;
+    height: 40px;
+    margin-left: 20px;
+    cursor: pointer;
+}
+.rightside{
+    display: flex;
+    align-items: center;
+}
+.nav-links{
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links li{
+    margin: 0 15px;
+}
+.nav-links a{
+    text-decoration: none;
+    color: black;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+.nav-links a:hover{
+    color: rgb(255, 106, 0);
+}
+.search-box{
+    position: relative;
+    margin: 0px 20px;
+}
+
+.search-box input {
+  padding: 6px 35px 6px 10px;
+  border: 1px solid #fa6f0b;
+  border-radius: 20px;
+  outline: none;
+}
+.voice-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+}
+
+.voice-btn:hover {
+  transform: translateY(-50%) scale(1.1);
+}
+
+.cart{
+    margin-right: 40px;
+}
+.cart img{
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+.cart img:hover {
+    transform: scale(1.1);
+}
+
+.cart-icon{
+    position: relative;
+    display: inline-block;
+}
+.cart-count{
+    position: absolute;
+    top: -6;
+    right: -6;
+    background: rgb(255, 107, 2);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 50%;
+  padding: 2px 6px;
+  line-height: 1;
+
+}
+.p-reg{
+    margin-top: 10px;
+    text-align: center;
+}
+
+
+
+.menu-btn {
+  display: none;
+  font-size: 26px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+
+/* Mobile */
+@media (max-width: 768px) {
+  .menu-btn {
+    display: block;
+  }
+
+  .rightside {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    display: none;
+    width: 100%;
+    background: #fff;
+    padding: 10px 0;
+  }
+
+  .nav-links.active {
+    display: flex;
+  }
+
+  .nav-links li {
+    margin: 10px 0;
+    text-align: center;
+  }
+
+  .search-box {
+    margin: 10px 0;
+  }
+
+  .cart {
+    margin: 10px 0;
+  }
+}
+
+
+
