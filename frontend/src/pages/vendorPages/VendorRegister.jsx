@@ -31,7 +31,7 @@ function VendorRegister() {
     }
 
     try{
-      const res = await axios.post(`${API_URL}/api/auth/register-vendor`,formData);
+      await axios.post(`${API_URL}/api/auth/register-vendor`,formData);
 
       alert("vendor account created successfully");
 

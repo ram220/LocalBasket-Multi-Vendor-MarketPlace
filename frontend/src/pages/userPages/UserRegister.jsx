@@ -29,7 +29,7 @@ function UserRegister() {
       }
       
       try{
-        await axios.post(`http://localhost:8000/api/auth/register-user`,formData);
+        await axios.post(`${API_URL}/api/auth/register-user`,formData);
 
         alert("user account created successfully");
 
