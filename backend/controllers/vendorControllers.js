@@ -32,10 +32,17 @@ exports.addProduct=async(req,res)=>{
         const vendorId=req.user.id;
         const vendor=await Vendors.findById(vendorId);
 
-        if(vendor.status==="pending" || vendor.status=="reject"){
-            return res.status(400).json({
+        if(vendor.status!=="approved"){
+            return res.status(403).json({
                 status:"fail",
                 message:"your are not approved by the admin to perform this"
+            })
+        }
+
+        if(vendor.subscriptionStatus!=="active" && vendor.subscriptionStatus!=="trial"){
+            return res.status(403).json({
+                status:"fail",
+                message:"Your Subscription expired. Please renew it."
             })
         }
 
@@ -327,7 +334,6 @@ exports.updateItemStatus=async(req,res)=>{
         });
     }
     catch(err){
-        console.log(err);
         res.status(500).json({
             
             message: "Error updating status",
@@ -336,4 +342,5 @@ exports.updateItemStatus=async(req,res)=>{
     }
 }
 
-module.exports.upload = upload;
+
+exports.upload=upload;

@@ -24,6 +24,10 @@ const vendorSchema=new mongoose.Schema({
         type:String,
         required:[true,"shop name is a required field"],
     },
+    shopImage:{
+        type:String,
+        default:""
+    },
     category:{
         type:String,
         required:[true,"category is a required field"],
@@ -33,6 +37,21 @@ const vendorSchema=new mongoose.Schema({
         enum:["pending","approved","rejected"],
         default:"pending"
     },
+    subscriptionStatus:{
+        type:String,
+        enum:["inactive","trial","active","expired"],
+        default:"inactive"
+    },
+    trialStartDate:{
+        type:Date
+    },
+
+    trialEndDate:{
+        type:Date
+    },
+    subscriptionStartDate:Date,
+    subscriptionEndDate:Date,
+    subscriptionPaymentId:String,
     address:{
         type:String,
         required:[true,"address is a required field"],
@@ -43,10 +62,7 @@ const vendorSchema=new mongoose.Schema({
         required:[true,"address is a required field"],
         match:[/^[0-9]{10}$/],
     },
-    isVerified:{
-        type:Boolean,
-        default:false
-    },
+    
     role:{
         type:String,
         enum:["vendor","admin"],

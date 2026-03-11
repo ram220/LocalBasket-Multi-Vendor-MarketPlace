@@ -28,6 +28,7 @@ const updatedItems = cart.items.map(item => {
 
     return {
         productId: item.productId._id,
+        name:item.productId.name,
         quantity: item.quantity,
         price: finalPrice,
         image: item.productId.image,
@@ -58,8 +59,6 @@ const totalAmount = itemsTotal + deliveryCharge;
         })
     }
     catch(err){
-                    console.log("ORDER ERROR:", err); 
-
         res.status(500).json({
             message:"error while placing order try after some time",
             err:err.message

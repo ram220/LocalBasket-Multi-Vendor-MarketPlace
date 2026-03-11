@@ -13,6 +13,10 @@ const ordersSchema = new mongoose.Schema({
                 ref:"Product",
                 required:true
             },
+            name:{
+                type:String,
+                required:true
+            },
             quantity:{
                 type:Number,
                 required:true
@@ -64,6 +68,15 @@ const ordersSchema = new mongoose.Schema({
         type:String,
         enum:["Pending","Completed"],
         default:"Pending"
+    },
+    deliveryAgentId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"DeliveryAgent"
+    },
+    deliveryStatus:{
+        type:String,
+        enum:["Not Assigned","Assigned","Picked","Out for Delivery","Delivered"],
+        default:"Not Assigned"
     }
 },{timestamps:true});
 

@@ -2,10 +2,11 @@ const express=require('express');
 const vendorControllers=require('../controllers/vendorControllers');
 const authMiddlewares=require('../middlewares/authMiddlewares');
 const upload=vendorControllers.upload;
+const checkVendorSubscription=require('../middlewares/checkVendorSubscription');
 
 const router=express.Router();
 
-router.post('/addProduct',authMiddlewares.protectRoutes,authMiddlewares.isVendor,upload.single("image"),vendorControllers.addProduct)
+router.post('/addProduct',authMiddlewares.protectRoutes,authMiddlewares.isVendor,checkVendorSubscription.checkSubscription,upload.single("image"),vendorControllers.addProduct)
 router.get('/fetchProducts',authMiddlewares.protectRoutes,authMiddlewares.isVendor,vendorControllers.getVendorProducts);
 router.patch('/updateProduct/:productId',authMiddlewares.protectRoutes,authMiddlewares.isVendor,vendorControllers.updateProduct);
 router.patch('/deleteProduct/:productId',authMiddlewares.protectRoutes,authMiddlewares.isVendor,vendorControllers.deleteProduct);

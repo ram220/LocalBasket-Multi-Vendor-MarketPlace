@@ -11,6 +11,8 @@ const userRoutes=require('./routes/userRoutes');
 const cartRoutes=require('./routes/cartRoutes');
 const orderRoutes=require('./routes/orderRoutes');
 const chatbotRoutes=require('./routes/chatbotRoutes');
+const deliveryAgentRoutes=require('./routes/deliveryAgentRoutes');
+const vendorPaymentRoutes=require('./routes/vendorPaymentRoutes');
 
 const app=express();
 
@@ -27,6 +29,8 @@ app.use('/api/user',userRoutes);
 app.use('/api/cart',cartRoutes);
 app.use('/api/orders',orderRoutes);
 app.use('/api/chatbot',chatbotRoutes);
+app.use('/api/agent',deliveryAgentRoutes);
+app.use('/api/vendorPayment',vendorPaymentRoutes);
 
 
 app.get("/",(req,res)=>{

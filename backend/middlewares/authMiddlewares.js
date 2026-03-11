@@ -2,6 +2,7 @@ const jwt=require('jsonwebtoken');
 const Users = require('../models/userModel');
 const Vendors = require('../models/vendorModel');
 const Admin = require('../models/adminModel');
+const DeliveryAgent=require('../models/deliveryAgentModel');
 
 exports.protectRoutes=async(req,res,next)=>{
     try{
@@ -20,7 +21,6 @@ exports.protectRoutes=async(req,res,next)=>{
         try {
             decodedToken = jwt.verify(token, process.env.MY_LOCALBASKET_SECRET_KEY);
         } catch (err) {
-            console.log(err)
             return res.status(401).json({
                 status: "fail",
                 message: "Invalid or expired token please login to continue"
@@ -39,6 +39,10 @@ exports.protectRoutes=async(req,res,next)=>{
             user=await Admin.findById(decodedToken.id);
         }
 
+        if(!user){
+            user=await DeliveryAgent.findById(decodedToken.id);
+        }
+
         if (!user) {
             return res.status(401).json({
                 status: "fail",
@@ -46,13 +50,11 @@ exports.protectRoutes=async(req,res,next)=>{
             });
         }
 
-
         req.user=user;
 
         next();
     }
     catch(err){
-        console.log(err)
         res.status(500).json({
             status:"fail",
             message:"error in authMiddleware",
@@ -90,3 +92,13 @@ exports.isUser = (req, res, next) => {
     }
     next();
 };
+
+exports.isDeliveryAgent=(req,res,next)=>{
+    if(req.user.role!=="delivery_agent"){
+        return res.status(403).json({
+            status:"fail",
+            message:"Access denied. Delivery agent only"
+        })
+    }
+    next();
+}

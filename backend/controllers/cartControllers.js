@@ -84,7 +84,6 @@ const finalPrice = offerData.finalPrice || product.price;
 exports.getCart=async(req,res)=>{
     try{
         const userId=req.user.id;
-        console.log(userId);
 
         const cart=await Cart.findOne({userId})
             .populate("items.productId", "name price image expiryDate")
@@ -218,7 +217,6 @@ exports.removeFromCart=async(req,res)=>{
         const {productId}=req.params;
 
         const cart=await Cart.findOne({userId});
-        console.log(cart);
         if(!cart){
              return res.status(404).json({
                 status: "fail",

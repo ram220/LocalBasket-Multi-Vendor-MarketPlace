@@ -153,7 +153,6 @@ exports.getRecomendedProducts=async(req,res)=>{
 exports.searchedProduct=async(req,res)=>{
     try{
         const query=req.query.q;
-        console.log(query)
         if(!query || query.trim() === ""){
             return res.status(200).json({
                 message: "Empty search",
@@ -193,10 +192,9 @@ exports.searchedProduct=async(req,res)=>{
 exports.getUserOrders=async(req,res)=>{
     try{
         const userId=req.user.id;
-        console.log(userId)
         const orders=await Orders.find({userId})
+        .populate("deliveryAgentId", "name mobile")
             .sort({ createdAt: -1 });
-        console.log(orders);
         res.status(200).json({
             message:"orders fetched",
             orders
@@ -305,9 +303,7 @@ exports.cancelOrder = async (req, res) => {
 exports.getUserDetails=async(req,res)=>{
     try{
         const userId=req.user.id;
-        console.log(userId);
         const user=await Users.findById(userId);
-        console.log(user)
         if(!user){
             return res.status(404).json({
                 status:"fail",
