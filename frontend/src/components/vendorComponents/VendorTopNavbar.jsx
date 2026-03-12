@@ -3,12 +3,18 @@ import { useState, useEffect } from "react";
 
 function VendorTopNavbar({logoutUser}) {
     const [isLoggedIn,setIsLoggedIn]=useState(false);
+    const [shopOpen,setShopOpen] = useState(true);
+
+    //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
+
+    const API_URL="http://localhost:8000";
 
     const navigate=useNavigate()
 
+    const token=localStorage.getItem("token");
+
     useEffect(()=>{
         const checkToken=()=>{
-            const token=localStorage.getItem('token');
             if(!token){
                 setIsLoggedIn(false);
                 return;
@@ -16,13 +22,63 @@ function VendorTopNavbar({logoutUser}) {
             setIsLoggedIn(true);
             
         }
+
+
+        const fetchShopStatus = async () => {
+          try{
+
+              const res = await fetch(`${API_URL}/api/vendor/shop-status`,{
+                  headers:{
+                      Authorization:`Bearer ${token}`
+                  }
+              });
+
+              const data = await res.json();
+
+              setShopOpen(data.isShopOpen);
+
+          }catch(err){
+              console.log(err);
+          }
+        }
+
         checkToken();
+        fetchShopStatus();
     },[])
 
     const handleLogout=()=>{
         logoutUser();
         navigate('/login')
     }
+
+
+    const toggleShopStatus = async () => {
+
+        try{
+
+            const token = localStorage.getItem("token");
+
+            const res = await fetch(
+                `${API_URL}/api/vendor/toggle-shop`,
+                {
+                    method:"PATCH",
+                    headers:{
+                        "Content-Type":"application/json",
+                        Authorization:`Bearer ${token}`
+                    }
+                }
+            );
+
+            const data = await res.json();
+
+            setShopOpen(data.isShopOpen);
+
+        }catch(err){
+            console.log(err);
+        }
+
+    }
+
   return (
     <nav className="navbar navbar-expand-lg navbar-light shadow-sm px-3 sticky-top"
          style={{ backgroundColor: "whitesmoke" }}>
@@ -58,6 +114,19 @@ function VendorTopNavbar({logoutUser}) {
                   Hi, <span style={{ color: "rgb(255, 107, 2)" }}>Vendor</span>
                 </span>
               </li>
+
+              <li className="nav-item">
+  <button
+    onClick={toggleShopStatus}
+    className="btn btn-sm"
+    style={{
+      backgroundColor: shopOpen ? "green" : "gray",
+      color:"white"
+    }}
+  >
+    {shopOpen ? "Shop Open" : "Shop Closed"}
+  </button>
+</li>
 
               <li className="nav-item">
                 <button

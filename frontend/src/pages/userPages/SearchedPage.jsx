@@ -10,8 +10,8 @@ function SearchedPage() {
 
   const {fetchCart} = useOutletContext();
 
-  const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
-  //const API_URL = "http://localhost:8000";
+  //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
+  const API_URL = "http://localhost:8000";
   
   const token=localStorage.getItem("token"); 
 
@@ -38,9 +38,18 @@ function SearchedPage() {
     fetchProducts();
   }, [query]);
 
-  const addToCart=async(productId)=>{
+  const addToCart=async(productId,item)=>{
     if(!token){
       alert("please login to add items to cart");
+      return;
+    }
+    if(!item.isShopOpen){
+      alert("Shop is currently closed");
+      return;
+    }
+
+    if(!item.inStock){
+      alert("Product is out of stock");
       return;
     }
     try{
@@ -81,7 +90,12 @@ function SearchedPage() {
                 {/* Add to Cart */}
                 <button
                   className="plus-btn"
-                  onClick={() => addToCart(item._id)}
+                  disabled={!item.inStock || !item.isShopOpen}
+                  onClick={() => addToCart(item._id, item)}
+                  style={{
+                    opacity: (!item.inStock || !item.isShopOpen) ? 0.5 : 1,
+                    cursor: (!item.inStock || !item.isShopOpen) ? "not-allowed" : "pointer"
+                  }}
                 >
                   +
                 </button>
@@ -94,24 +108,28 @@ function SearchedPage() {
                 />
 
                 <div className="card-body d-flex flex-column">
-                  <h5 className="card-title text-truncate">
+                  <h5 className="card-title text-truncate text-center">
                     {item.name}
                   </h5>
-                {/*
-                  <p className="card-text">
-                    ₹{item.price}
-                  </p>
-                  */}
+               
 
-                  <p className="card-text">
+                  <p className="card-text text-center">
                     ₹{item.finalPrice}
 
-{item.isOffer && (
-  <span style={{ textDecoration: "line-through", marginLeft: "5px", color: "gray" }}>
-    ₹{item.price}
-  </span>
-)}
+                    {item.isOffer && (
+                      <span style={{ textDecoration: "line-through", marginLeft: "5px", color: "gray" }}>
+                        ₹{item.price}
+                      </span>
+                    )}
                   </p>
+
+                  {!item.isShopOpen && (
+                    <small className="text-center" style={{color:"red"}}>Shop Closed</small>
+                  )}
+
+                  {item.isShopOpen && !item.inStock && (
+                    <small className="text-center" style={{color:"red"}}>Out of Stock</small>
+                  )}
 
                   <small
                     onClick={() =>
@@ -129,6 +147,7 @@ function SearchedPage() {
                       alignItems: "center",
                       fontWeight: "bold",
                       cursor: "pointer",
+                      margin:"10px auto 0"
                     }}
                   >
                     view more

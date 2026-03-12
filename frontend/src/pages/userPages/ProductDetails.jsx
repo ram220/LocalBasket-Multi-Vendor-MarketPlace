@@ -8,8 +8,8 @@ import { useOutletContext } from "react-router-dom";
 function ProductDetails() {
   const { productId } = useParams();
 
-  const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
-  //const API_URL = "http://localhost:8000";
+  //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
+  const API_URL = "http://localhost:8000";
 
   const {fetchCart} = useOutletContext();
 
@@ -41,9 +41,19 @@ function ProductDetails() {
 
     const addToCart=async(productId)=>{
         if(!token){
-          alert("please login to add items to cart");
-          return;
-        }
+    alert("please login to add items to cart");
+    return;
+  }
+
+  if(!product.isShopOpen){
+    alert("Shop is currently closed");
+    return;
+  }
+
+  if(!product.inStock){
+    alert("Product is out of stock");
+    return;
+  }
         try{
           await axios.post(`${API_URL}/api/cart/addToCart`,
             {
@@ -79,6 +89,11 @@ function ProductDetails() {
 
         <div className="col-md-7">
           <h2>{product.name}</h2>
+          {!product.isShopOpen && (
+  <p style={{color:"red", fontWeight:"600"}}>
+    Shop is currently closed
+  </p>
+)}
           {/*
           <h4 className="text-success">
                       ₹{" "}
@@ -127,16 +142,19 @@ function ProductDetails() {
             <p className="mt-3">{product.description}</p>
           )}
 
-          {product.inStock ? (
-            <button
-              className="btn btn-secondary btn-sm mt-3" style={{backgroundColor:"rgb(252, 107, 3)"}}
-              onClick={() => addToCart(product._id)}
-            >
-              Add to Cart
-            </button>
-          ) : (
-            <p className="text-danger mt-3">Out of Stock</p>
-          )}
+          {product.isShopOpen && (
+  product.inStock ? (
+    <button
+      className="btn btn-secondary btn-sm mt-3"
+      style={{backgroundColor:"rgb(252, 107, 3)"}}
+      onClick={() => addToCart(product._id)}
+    >
+      Add to Cart
+    </button>
+  ) : (
+    <p className="text-danger mt-3">Out of Stock</p>
+  )
+)}
         </div>
       </div>
 

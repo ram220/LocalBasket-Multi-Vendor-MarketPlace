@@ -9,8 +9,8 @@ function Products() {
 
   const {fetchCart} = useOutletContext();
   
-  const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
-  //const API_URL = "http://localhost:8000";
+  //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
+  const API_URL = "http://localhost:8000";
 
   const token=localStorage.getItem("token");
   useEffect(() => {
@@ -26,7 +26,16 @@ function Products() {
     fetchProducts();
   }, [id]);
 
-  const addToCart=async(productId)=>{
+  const addToCart=async(productId,product)=>{
+    if(!product.isShopOpen){
+      alert("Shop is currently closed");
+      return;
+    }
+
+    if(!product.inStock){
+      alert("Product is out of stock");
+      return;
+    }
     try{
       await axios.post(`${API_URL}/api/cart/addToCart`,{productId,quantity:1},{
         headers:{Authorization: `Bearer ${token}`}
@@ -66,10 +75,18 @@ function Products() {
                     p.isOffer ? (<p className="fw-bold text-success">₹{p.finalPrice}</p>) : (<p className="fw-bold text-success">₹{p.price}</p>)
                   }
 
-                  <button className="btn btn-sm w-100"
-                    onClick={()=>addToCart(p._id)}
-                    style={{ background: "rgb(255, 106, 0)", color: "#fff" }}>
-                    Add to Cart
+                  <button
+                      className="btn btn-sm w-100"
+                      disabled={!p.inStock || !p.isShopOpen}
+                      onClick={()=>addToCart(p._id,p)}
+                      style={{
+                        background: "rgb(255, 106, 0)",
+                        color: "#fff",
+                        opacity: (!p.inStock || !p.isShopOpen) ? 0.6 : 1,
+                        cursor: (!p.inStock || !p.isShopOpen) ? "not-allowed" : "pointer"
+                      }}
+                    >
+                      { !p.isShopOpen ? "Shop Closed" : !p.inStock ? "Out of Stock" : "Add to Cart" }
                   </button>
                 </div>
               </div>

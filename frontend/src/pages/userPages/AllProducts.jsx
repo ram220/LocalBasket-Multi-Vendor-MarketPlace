@@ -8,10 +8,11 @@ import { useNavigate } from "react-router-dom";
 function AllProducts() {
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState("all");
+  const [shopClosedMsg,setShopClosedMsg]=useState("");
 
-  const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
+  //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
 
-  //const API_URL = "http://localhost:8000";
+  const API_URL = "http://localhost:8000";
 
   const {fetchCart} = useOutletContext();
 
@@ -90,22 +91,36 @@ function AllProducts() {
           {filteredProducts.map((p) => (
             <div key={p._id} className="product-card">
               
-              <button disabled={!p.inStock} className="plus-btn" onClick={()=>addToCart(p._id)}>+</button>
 
-              <img src={`${p.image}`} className="product-img" alt={p.name} />
+              <button className="plus-btn" disabled={!p.inStock || !p.isShopOpen}
+                style={{opacity: (!p.inStock || !p.isShopOpen) ? 0.5 : 1,
+                  cursor: (!p.inStock || !p.isShopOpen) ? "not-allowed" : "pointer"
+                }}
+                onClick={()=>addToCart(p._id)}>+
+              </button>
+
+              <div className="product-image-container">
+
+                  <img src={p.image} className="product-img" alt={p.name} />
+
+                  {!p.isShopOpen && (<div className="shop-closed-badge">Shop Closed</div>)}
+              </div>
+
               <div className="card-body d-flex flex-column">
                 <h4 className="text-center">{p.name}</h4>
+
+     
                 {/*<h5 className="text-center">{p.price}</h5>*/}
 
-                <h5 className="text-center">
-  ₹{p.finalPrice}
+                <h5 className="text-center">₹{p.finalPrice}
 
-  {p.isOffer && (
-    <span style={{ textDecoration: "line-through", marginLeft: "8px", color: "gray" }}>
-      ₹{p.price}
-    </span>
-  )}
-</h5>
+                  {p.isOffer && (
+                    <span style={{ textDecoration: "line-through", marginLeft: "8px", color: "gray" }}>
+                      ₹{p.price}
+                    </span>
+                  )}
+                </h5>
+                <p className="text-center">{p.shopName}</p>
 
                 <div style={{display:'flex',justifyContent:'center',alignItems:'center',margin:'10px 0'}}>
                   {

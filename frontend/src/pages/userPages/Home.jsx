@@ -7,9 +7,9 @@ import { useNavigate } from 'react-router-dom';
 function Home(){
     const [stores,setStores]=useState([]);
 
-    const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
+    //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
 
-    //const API_URL="http://localhost:8000"
+    const API_URL="http://localhost:8000"
 
     const navigate=useNavigate();
 
@@ -52,18 +52,30 @@ function Home(){
                 <div className="row mt-4">
                 {stores.map((s) => (
                     <div className="col-12 col-sm-6 col-md-4 col-lg-3" key={s._id} onClick={()=>navigate(`/store/${s._id}`)} style={{cursor:"pointer"}}>
-                        <div className="card p-3 shadow-sm h-100">
-                            <img 
-                                src={s.shopImage} 
-                                className="card-img-top"
-                                alt={s.name}
-                                style={{ height: "150px", objectFit: "cover" }}
-                            />
-                            <div className="card-body text-center">
-                            <h5>{s.shopName}</h5>
-                            <p className="mb-1">{s.address}</p>
-                            <small className="text-muted">{s.category}</small>
+                        <div className="store-card card shadow-sm h-100">
+
+                            <div className="store-img-container">
+
+                                <img 
+                                    src={s.shopImage} 
+                                    className="card-img-top"
+                                    alt={s.name}
+                                />
+
+                                {!s.isShopOpen && (
+                                    <div className="store-closed-banner">
+                                    Shop Closed
+                                    </div>
+                                )}
+
                             </div>
+
+                            <div className="card-body text-center">
+                                <h5>{s.shopName}</h5>
+                                <p className="mb-1">{s.address}</p>
+                                <small className="text-muted">{s.category}</small>
+                            </div>
+
                         </div>
                     </div>
                 ))}
