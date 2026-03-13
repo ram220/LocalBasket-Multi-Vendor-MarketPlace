@@ -5,9 +5,9 @@ function SubscriptionStatus() {
 
   const [subscription,setSubscription]=useState(null);
 
-  const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
+  //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
 
-  //const API_URL="http://localhost:8000";
+  const API_URL="http://localhost:8000";
 
   const token=localStorage.getItem("token");
   useEffect(()=>{
@@ -39,7 +39,7 @@ function SubscriptionStatus() {
   const renewPlan = async () => {
 
   const res = await axios.post(
-    `${API_URL}/api/vendor/createSubscriptionOrder`,
+    `${API_URL}/api/vendorPayment/createSubscriptionOrder`,
     {},
     {headers:{Authorization:`Bearer ${token}`}}
   );
@@ -55,7 +55,7 @@ function SubscriptionStatus() {
     handler: async function (response) {
 
       await axios.post(
-        `${API_URL}/api/vendor/activateSubscription`,
+        `${API_URL}/api/vendorPayment/activateSubscription`,
         {
           razorpay_order_id: response.razorpay_order_id,
           razorpay_payment_id: response.razorpay_payment_id,

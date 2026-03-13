@@ -6,8 +6,8 @@ function ViewProducts() {
     const [page, setPage] = useState(1);
     const [totalPages,setTotalPages]=useState(1);
 
-    const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
-    //const API_URL="http://localhost:8000";
+    //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
+    const API_URL="http://localhost:8000";
 
     const token=localStorage.getItem("token");
 
@@ -64,6 +64,24 @@ function ViewProducts() {
         }
     }
 
+    const deleteProduct=async(productId)=>{
+      try{
+        const res=await axios.delete(`${API_URL}/api/vendor/deleteProduct/${productId}`,{
+          headers:{Authorization:`Bearer ${token}`}
+        });
+
+        setProducts((prev)=>prev.filter((p)=>p._id !== productId));
+
+        alert("product deleted successfully");
+
+      }
+      catch(err){
+        const message=err.response?.data.message || "something went wrong while deleting product";
+        alert(message);
+      }
+
+    }
+
   return (
     <div className="p-3">
       <h5>All Products</h5>
@@ -84,6 +102,7 @@ function ViewProducts() {
           <div style={{ flex: 1 }}>Category</div>
           <div style={{ flex: 1 }}>Price</div>
           <div style={{ flex: 1 }}>In Stock</div>
+          <div style={{flex:1}}>Action</div>
         </div>
 
         {/* Products */}
@@ -118,6 +137,17 @@ function ViewProducts() {
                             <span className="slider"></span>
                         </label>
                     </div>
+
+                    {/* delete button */}
+<div style={{flex:1}}>
+  <button
+    className="btn btn-sm btn-danger"
+    onClick={()=>deleteProduct(p._id)}
+  >
+    Delete
+  </button>
+</div>
+                    
                 </div>
             ))
         }
@@ -175,6 +205,8 @@ function ViewProducts() {
         input:checked + .slider { background-color: #4CAF50; }
         input:checked + .slider:before { transform: translateX(20px); }
       `}</style>
+
+      
     </div>
   );
 }
