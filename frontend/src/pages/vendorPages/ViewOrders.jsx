@@ -6,8 +6,8 @@ function ViewOrders() {
     const [currentPage,setCurrentPage]=useState(1)
     const [totalPages,setTotalPages]=useState(1);
 
-    const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
-    //const API_URL = "http://localhost:8000";
+    //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
+    const API_URL = "http://localhost:8000";
     const token=localStorage.getItem("token");
 
     useEffect(()=>{
@@ -95,37 +95,33 @@ function ViewOrders() {
 
                                 <div className="row border-top pt-2">
                                     {order.items.map((item) => (
-                                        <div key={item._id} className="col-md-6 d-flex align-items-center mb-2">
-                                            <img
-                                            src={item.productId?.image}
-                                            alt={item.productId?.name}
-                                            style={{ height: "60px", width: "60px", marginRight: "10px" }}
-                                            />
-                                            <div>
-                                            <h6 className="mb-1">{item.productId?.name}</h6>
-                                            <small>₹{item.price} × {item.quantity}</small><br />
-                                            <strong>Subtotal: ₹{item.price * item.quantity}</strong>
+                                        <div key={item._id} className="col-md-6 d-flex justify-content-between align-items-center mb-2">
+                                            <div className="d-flex align-items-center">
+                                                <img
+                                                src={item.productId?.image}
+                                                alt={item.productId?.name}
+                                                style={{ height: "60px", width: "60px", marginRight: "10px" }}
+                                                />
+                                                <div>
+                                                <h6 className="mb-1">{item.productId?.name}</h6>
+                                                <small>₹{item.price} × {item.quantity}</small><br />
+                                                <strong>Subtotal: ₹{item.price * item.quantity}</strong>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {order.items.map((item) => (
-                                    <div key={item._id}>
-                                        
-                                        {/* existing UI */}
-
+                                            
                                         <select
-                                        value={item.status}
-                                        onChange={(e) => handleOrderStatus(order._id, item._id, e.target.value)}
-                                        >
-                                        <option value="Placed">Placed</option>
-                                        <option value="Ready">Ready</option>
-                                        <option value="Delayed">Delayed</option>
-                                        <option value="Cancelled">Cancelled</option>
+                                            value={item.status}
+                                            onChange={(e) => handleOrderStatus(order._id, item._id, e.target.value)}
+                                            >
+                                            <option value="Placed">Placed</option>
+                                            <option value="Ready">Ready</option>
+                                            <option value="Delayed">Delayed</option>
+                                            <option value="Cancelled">Cancelled</option>
                                         </select>
+                                        </div>
                                     </div>
-                                ))}
+                                        
+                                    ))}
+                                </div>                        
                             </div>
                         ))
                     }
