@@ -3,6 +3,9 @@ const Cart=require('../models/cartModel');
 const calculateOffer=require('../utils/offersCheck');
 const razopay=require('../config/razorpay');
 const Vendors=require('../models/vendorModel');
+const DeliveryAgent=require('../models/deliveryAgentModel');
+const sendEmail=require('../utils/sendEmail');
+const Admin=require('../models/adminModel');
 
 exports.placeOrder = async(req,res)=>{
     try{
@@ -90,6 +93,31 @@ exports.placeOrder = async(req,res)=>{
             paymentStatus:paymentStatus || "Pending"
         })
 
+        // get unique vendor ids and emails
+        const vendorIds = [...new Set(updatedItems.map(item => item.vendorId.toString()))];
+
+        const vendors = await Vendors.find({ _id: { $in: vendorIds } });
+
+        for (const vendor of vendors) {
+                sendEmail(
+                vendor.email,
+                "New Order Received - LocalBasket",
+                `Hello ${vendor.shopName},\n\nYou have received a new order.\nOrder ID: ${newOrder._id}\nPlease login to your dashboard to view details.`
+            );
+        }
+
+
+        // email for admin
+        const admins = await Admin.find();
+
+        for (const admin of admins) {
+                sendEmail(
+                admin.email,
+                "New Order Placed",
+                `A new order has been placed.\nOrder ID: ${newOrder._id}\nTotal Amount: ₹${totalAmount}`
+            );
+        }
+
         await Cart.findOneAndUpdate({userId},{items:[]});
 
         res.status(201).json({
@@ -98,6 +126,7 @@ exports.placeOrder = async(req,res)=>{
         })
     }
     catch(err){
+        console.log(err);
         res.status(500).json({
             message:"error while placing order try after some time",
             err:err.message

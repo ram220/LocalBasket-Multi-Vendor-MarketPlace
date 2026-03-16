@@ -382,6 +382,14 @@ exports.assignDeliveryAgent=async(req,res)=>{
         order.deliveryAgentId=agentId;
         order.deliveryStatus="Assigned";
 
+        const agent = await DeliveryAgent.findById(order.deliveryAgentId);
+
+        sendEmail(
+            agent.email,
+            "New Delivery Assigned",
+            `You have been assigned a new delivery.\nOrder ID: ${order._id}`
+        );
+
         await order.save();
 
         res.status(200).json({

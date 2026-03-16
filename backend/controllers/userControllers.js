@@ -80,7 +80,10 @@ exports.getSingleProduct=async(req,res)=>{
 
 exports.getAllStores=async(req,res)=>{
     try{
-        const vendors=await Vendors.find({status:"approved"});
+        const vendors=await Vendors.find(
+            {status:"approved"},
+            "shopName address category shopImage isShopOpen subscriptionStatus"
+        );
 
         res.status(200).json({
             status:"success",
