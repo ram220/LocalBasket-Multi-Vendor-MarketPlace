@@ -90,3 +90,49 @@ exports.updatePaymentStatus=async(req,res)=>{
         });
     }
 }
+
+// get my availability status
+
+exports.getMyAvalibility = async (req, res) => {
+    try {
+        const agent = await DeliveryAgent.findById(req.user._id);
+
+        res.json({
+            isAvailable:agent.isAvailable
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            message: "Error fetching profile"
+        });
+    }
+};
+
+// toggle availability
+
+exports.toggleAvailability = async (req, res) => {
+    try {
+        const agentId = req.user.id;
+
+        const agent = await DeliveryAgent.findById(agentId);
+
+        if (!agent) {
+            return res.status(404).json({ message: "Agent not found" });
+        }
+
+        agent.isAvailable = !agent.isAvailable;
+
+        await agent.save();
+
+        res.json({
+            message: "Availability updated",
+            isAvailable: agent.isAvailable
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            message: "Error updating availability",
+            err: err.message
+        });
+    }
+};

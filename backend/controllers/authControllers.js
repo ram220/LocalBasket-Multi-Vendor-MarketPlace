@@ -7,6 +7,8 @@ const DeliveryAgent = require('../models/deliveryAgentModel');
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../config/cloudinary");
+const crypto=require("crypto");
+const sendEmail=require('../utils/sendEmail');
 
 
 const vendorStorage = new CloudinaryStorage({
@@ -25,6 +27,23 @@ const uploadVendor = multer({ storage: vendorStorage });
 exports.uploadVendor = uploadVendor;
 
 
+
+// for delivery agent
+
+const agentStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "delivery_agents",
+    allowed_formats: ["jpg","png","jpeg"],
+    transformation: [
+      { width: 600, height: 600, crop: "limit", quality: "auto" }
+    ]
+  }
+});
+
+const uploadAgent = multer({ storage: agentStorage });
+
+exports.uploadAgent = uploadAgent;
 
 // user registration
 
@@ -300,6 +319,53 @@ exports.loginAdmin = async (req, res) => {
 
 
 
+// register delivery agent
+
+exports.registerDeliveryAgent = async (req, res) => {
+    try {
+        const { name, email, password, address, mobile } = req.body;
+
+        const aadhaarImage = req.files["aadhaarImage"]?.[0]?.path;
+        const selfieImage = req.files["selfieImage"]?.[0]?.path;
+
+        if (!aadhaarImage || !selfieImage) {
+            return res.status(400).json({
+                message: "Aadhaar and Selfie are required"
+            });
+        }
+
+        const exists = await DeliveryAgent.findOne({ email });
+        if (exists) {
+            return res.status(409).json({
+                message: "Email already registered"
+            });
+        }
+
+        const hashedPwd = await bcrypt.hash(password, 10);
+
+        await DeliveryAgent.create({
+            name,
+            email,
+            password: hashedPwd,
+            address,
+            mobile,
+            aadhaarImage,
+            selfieImage,
+            status: "pending"
+        });
+
+        res.status(201).json({
+            message: "Registration submitted. Waiting for admin approval."
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            message: "Error registering agent",
+            err: err.message
+        });
+    }
+};
+
 // login delivery agent
 
 exports.loginDeliveryAgent=async(req,res)=>{
@@ -344,3 +410,84 @@ exports.loginDeliveryAgent=async(req,res)=>{
         })
     }
 }
+
+
+// forgot password
+const getModel = (role) => {
+    if (role === "user") return Users;
+    if (role === "vendor") return Vendors;
+    if (role === "admin") return Admin;
+    if (role === "delivery_agent") return DeliveryAgent;
+};
+
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { email, role } = req.body;
+
+        const Model = getModel(role);
+
+        if (!Model) {
+            return res.status(400).json({ message: "Invalid role" });
+        }
+
+        const user = await Model.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: "Account not found" });
+        }
+
+        const resetToken = crypto.randomBytes(32).toString("hex");
+
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+
+        await user.save();
+
+        const resetLink = `http://localhost:3000/reset-password/${resetToken}/${role}`;
+
+        res.json({ message: "Reset link sent to email" });
+        await sendEmail(
+            user.email,
+            "Reset Your Password",
+            `Click here:\n${resetLink}`
+        );
+
+
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ message: "Error sending reset link" });
+    }
+};
+
+
+// reset password
+
+exports.resetPassword = async (req, res) => {
+    try {
+        const { token, role } = req.params;
+        const { password } = req.body;
+
+        const Model = getModel(role);
+
+        const user = await Model.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpire: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid or expired token" });
+        }
+
+        user.password = await bcrypt.hash(password, 10);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+        user.passwordChangedAt = Date.now();
+
+        await user.save();
+
+        res.json({ message: "Password reset successful" });
+
+    } catch (err) {
+        res.status(500).json({ message: "Error resetting password" });
+    }
+};

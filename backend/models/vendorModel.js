@@ -70,7 +70,10 @@ const vendorSchema=new mongoose.Schema({
         type:String,
         enum:["vendor","admin"],
         default:"vendor",
-    }
+    },
+    resetPasswordToken:String,
+    resetPasswordExpire:Date,
+    passwordChangedAt:Date,
 },{timestamps:true});
 
 const Vendors=mongoose.model("Vendor",vendorSchema);

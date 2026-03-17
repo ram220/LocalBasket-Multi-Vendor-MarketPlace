@@ -20,6 +20,9 @@ const adminSchema=new mongoose.Schema({
         minlength:[3,"username leangth should be atleast 3 characters"],
         trim:true
     },
+    resetPasswordToken:String,
+    resetPasswordExpire:Date,
+    passwordChangedAt:Date,
     role:{
         type:String,
         default:"admin"

@@ -273,7 +273,9 @@ exports.addDeliveryAgent=async(req,res)=>{
 
 exports.getAllAgents=async(req,res)=>{
     try{
-        const agents=await DeliveryAgent.find().sort({createdAt:-1});
+        const agents=await DeliveryAgent.find()
+            .select("name email mobile status aadhaarImage selfieImage")
+            .sort({createdAt:-1});
 
         res.status(200).json({
             status:"success",
@@ -298,7 +300,10 @@ exports.approveAgent=async(req,res)=>{
 
         const agent=await DeliveryAgent.findByIdAndUpdate(
             agentId,
-            {status:"approved"},
+            {
+                status:"approved",
+                isVerified:true
+            },
             {new:true}
         );
 
@@ -406,3 +411,5 @@ exports.assignDeliveryAgent=async(req,res)=>{
         })
     }
 }
+
+

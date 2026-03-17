@@ -30,6 +30,9 @@ const userSchema=new mongoose.Schema({
         required:[true,"address is a required field"],
         match:[/^[0-9]{10}$/],
     },
+    resetPasswordToken:String,
+    resetPasswordExpire:Date,
+    passwordChangedAt:Date,
     isVerified:{
         type:Boolean,
         default:false

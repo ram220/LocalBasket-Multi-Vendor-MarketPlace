@@ -29,15 +29,27 @@ const deliveryAgentSchema=new mongoose.Schema({
         required:[true,"address is a required field"],
         match:[/^[0-9]{10}$/],
     },
-    isAvailable:{
-        type:Boolean,
-        default:true
-    },
 
+    aadhaarImage: {
+        type: String,
+        required: true
+    },
+    selfieImage: {
+        type: String,
+        required: true
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
     status:{
         type:String,
         enum:["pending","approved","blocked"],
         default:"pending"
+    },
+    isAvailable:{
+        type:Boolean,
+        default:true
     },
 
     currentOrder:{
@@ -45,6 +57,9 @@ const deliveryAgentSchema=new mongoose.Schema({
         ref:"Order",
         default:null
     },
+    resetPasswordToken:String,
+    resetPasswordExpire:Date,
+    passwordChangedAt:Date,
     role:{
         type:String,
         default:"delivery_agent"

@@ -43,6 +43,18 @@ exports.protectRoutes=async(req,res,next)=>{
             user=await DeliveryAgent.findById(decodedToken.id);
         }
 
+
+        if (user.passwordChangedAt) {
+            const changedTime = parseInt(user.passwordChangedAt.getTime() / 1000, 10);
+
+            if (decodedToken.iat < changedTime) {
+                return res.status(401).json({
+                    status: "fail",
+                    message: "Password changed recently. Please login again."
+                });
+            }
+        }
+
         if (!user) {
             return res.status(401).json({
                 status: "fail",
