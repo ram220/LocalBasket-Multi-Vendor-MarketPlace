@@ -10,6 +10,8 @@ function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
 
+  const [loading,setLoading]=useState(false)
+
   const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
   //const API_URL = "http://localhost:8000";
 
@@ -22,6 +24,7 @@ function ResetPassword() {
     }
 
     try {
+      setLoading(true);
       const res = await axios.post(`${API_URL}/api/auth/reset-password/${token}/${role}`, {
         password,
         role
@@ -31,6 +34,9 @@ function ResetPassword() {
       navigate("/login");
     } catch (err) {
       setMessage(err.response?.data.message || "Reset failed");
+    }
+    finally{
+      setLoading(false);
     }
   };
 
@@ -58,8 +64,8 @@ function ResetPassword() {
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
 
-          <button className="btn auth-btn w-100" style={{ background: "rgb(252, 107, 3)", color: "#fff" }}>
-            Reset Password
+          <button className="btn auth-btn w-100" style={{ background: "rgb(252, 107, 3)", color: "#fff" }} disabled={loading}>
+            {loading ? "changing.." : "Reset Password"}
           </button>
         </form>
       </div>

@@ -1,208 +1,230 @@
-import {useEffect,useState} from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 function AgentOrders(){
 
     const [orders,setOrders] = useState([]);
+
     const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
 
     //const API_URL="http://localhost:8000";
     const token=localStorage.getItem("token");
 
     useEffect(()=>{
-
-        const fetchOrders = async()=>{
-            try{
-
-                const res = await axios.get(`${API_URL}/api/agent/getAgentOrders`,{
-                headers:{Authorization:`Bearer ${token}`}
-                });
-                setOrders(res.data.orders);
-
-            }
-            catch(err){
-                const message=err.response?.data.message || "Something went wrong while fetching orders"
-                alert(message);
-            }
-        }
-
         fetchOrders();
+    },[]);
 
-    },[])
+    const fetchOrders = async()=>{
+        try{
+            const res = await axios.get(`${API_URL}/api/agent/getAgentOrders`,{
+                headers:{Authorization:`Bearer ${token}`}
+            });
+            setOrders(res.data.orders);
+        }catch(err){
+            alert("Error fetching orders");
+        }
+    };
 
+
+    const groupByVendor = (items) => {
+        const grouped = {};
+
+        items.forEach(item => {
+            const vendorName = item.vendorId?.shopName;
+
+            if (!grouped[vendorName]) {
+                grouped[vendorName] = [];
+            }
+
+            grouped[vendorName].push(item);
+        });
+
+        return grouped;
+    };
 
     const updateStatus = async(orderId,status)=>{
-        try{
+        await axios.patch(`${API_URL}/api/agent/updateDeliveryStatus`,
+        {orderId,status},
+        {headers:{Authorization:`Bearer ${token}`}});
 
-            await axios.patch(
-                `${API_URL}/api/agent/updateDeliveryStatus`,
-                {orderId,status},
-                {headers:{Authorization:`Bearer ${token}`}}
+        setOrders(prev =>
+            prev.map(order =>
+                order._id === orderId
+                ? {...order,deliveryStatus:status}
+                : order
             )
-
-            // update UI instantly
-            setOrders(prev =>
-                prev.map(order =>
-                    order._id === orderId
-                    ? {...order,deliveryStatus:status}
-                    : order
-                )
-            )
-
-        }
-        catch(err){
-            alert("Error updating delivery status")
-        }
-    }
-
+        );
+    };
 
     const updatePayment = async(orderId)=>{
-        try{
+        await axios.patch(`${API_URL}/api/agent/updatePaymentStatus`,
+        {orderId},
+        {headers:{Authorization:`Bearer ${token}`}});
 
-            await axios.patch(
-                `${API_URL}/api/agent/updatePaymentStatus`,
-                {orderId},
-                {headers:{Authorization:`Bearer ${token}`}}
+        setOrders(prev =>
+            prev.map(order =>
+                order._id === orderId
+                ? {...order,paymentStatus:"Completed"}
+                : order
             )
+        );
+    };
 
-            setOrders(prev =>
-                prev.map(order =>
-                    order._id === orderId
-                    ? {...order,paymentStatus:"Completed"}
-                    : order
-                )
-            )
-
-        }
-        catch(err){
-            alert("Error updating payment status")
-        }
-    }
+    const badgeColor = (status)=>{
+        if(status==="Assigned") return "bg-secondary";
+        if(status==="Picked") return "bg-warning text-dark";
+        if(status==="Out for Delivery") return "bg-primary";
+        if(status==="Delivered") return "bg-success";
+        return "bg-dark";
+    };
 
     return(
 
-        <div className="container">
+        <div className="container mt-4">
 
-            <h4>My Assigned Orders</h4>
+            <h3 className="text-center mb-4" style={{color:"#fc6b03"}}>
+                My Assigned Orders
+            </h3>
 
-            {
-                orders?.length > 0 ? (
-                    orders.map(order=>(
-                    <div key={order._id} className="border p-3 mb-3 rounded">
+            {orders.length > 0 ? (
 
-                        <h6>Order ID: {order._id}</h6>
+                orders.map(order => (
 
-                        <p>Customer: {order.userId?.name}</p>
+                    <div key={order._id} className="card shadow-lg mb-4 p-3">
 
-                        <p>Mobile: {order.userId?.mobile}</p>
+                        {/* HEADER */}
+                        <div className="d-flex justify-content-between">
+                            <h6>Order ID: {order._id}</h6>
+                            <span className={`badge ${badgeColor(order.deliveryStatus)}`}>
+                                {order.deliveryStatus}
+                            </span>
+                        </div>
 
-                        <p>Address: {order.userId?.address}</p>
+                        <hr/>
 
-                        <p>Delivery Status:<span className="badge bg-info ms-2">{order.deliveryStatus}</span></p>
-                        
-                        <p>Payment Method:<strong className="ms-2">{order.paymentMethod}</strong></p>
+                        {/* CUSTOMER */}
+                        <div>
+                            <h6>Customer</h6>
+                            <p className="mb-1"><strong>{order.userId?.name}</strong></p>
+                            <p className="mb-1">📞 {order.userId?.mobile}</p>
+                            <p className="mb-1">📍 {order.userId?.address}</p>
+                        </div>
 
-                        <p>Payment Status:<span className={`badge ms-2 ${order.paymentStatus==="Completed" ? "bg-success" : "bg-danger"}`}>{order.paymentStatus}</span></p>                     
-                        
-                        <h6>Products</h6>
+                        <hr/>
+
+                        {/* PAYMENT */}
+                        <div>
+                            <h6>Payment</h6>
+                            <p>
+                                Method: <strong>{order.paymentMethod}</strong>
+                            </p>
+
+                            <p>
+                                Status:
+                                <span className={`badge ms-2 ${
+                                    order.paymentStatus==="Completed" ? "bg-success" : "bg-danger"
+                                }`}>
+                                    {order.paymentStatus}
+                                </span>
+                            </p>
+                        </div>
+
+                        <hr/>
+
+                        {/* PRODUCTS shop wise */}
+                       <h6>Products (Shop-wise)</h6>
 
                         {
-                            order.items?.map(item => (
-                            <div key={item._id} className="d-flex align-items-start mb-3">
+                            Object.entries(groupByVendor(order.items)).map(([vendor, items]) => (
 
-                                <img
-                                src={item.productId?.image}
-                                alt=""
-                                style={{ height: "50px", width: "50px", marginRight: "10px" }}
-                                />
+                                <div key={vendor} className="mb-3 border rounded p-2">
 
-                                <div>
+                                    {/* VENDOR HEADER */}
+                                    <h6 className="text-primary">🏪 {vendor}</h6>
 
-                                <strong>{item.productId?.name}</strong>
+                                    {items.map(item => (
 
-                                <br/>
+                                        <div key={item._id} className="d-flex mb-2">
 
-                                <small>
-                                    Vendor: <strong>{item.vendorId?.shopName}</strong>
-                                </small>
+                                            <img
+                                                src={item.productId?.image}
+                                                style={{height:"50px",width:"50px",borderRadius:"6px"}}
+                                            />
 
-                                <br/>
+                                            <div className="ms-2">
 
-                                <small>
-                                    Vendor Modile: <strong>{item.vendorId?.mobile}</strong>
-                                </small>
+                                                <strong>{item.productId?.name}</strong>
 
-                                <br/>
+                                                <br/>
 
-                                <small>
-                                    Vendor Address: {item.vendorId?.address}
-                                </small>
+                                                <small>Qty: {item.quantity}</small>
 
-                                <br/>
+                                            </div>
 
-                                <small>
-                                    Quantity: {item.quantity}
-                                </small>
+                                        </div>
+
+                                    ))}
 
                                 </div>
-
-                            </div>
                             ))
                         }
 
+                        <hr/>
 
-                        <div className="mt-3">
+                        {/* ACTION BUTTONS */}
+                        <div className="d-flex flex-wrap gap-2">
 
                             <button
-                            className="btn btn-warning btn-sm me-2"
-                            onClick={()=>updateStatus(order._id,"Picked")}
-                            disabled={order.deliveryStatus!=="Assigned"}
+                                className="btn btn-warning"
+                                onClick={()=>updateStatus(order._id,"Picked")}
+                                disabled={order.deliveryStatus!=="Assigned"}
                             >
-                            Picked
+                                Picked
                             </button>
 
                             <button
-                            className="btn btn-primary btn-sm me-2"
-                            onClick={()=>updateStatus(order._id,"Out for Delivery")}
-                            disabled={order.deliveryStatus!=="Picked"}
+                                className="btn btn-primary"
+                                onClick={()=>updateStatus(order._id,"Out for Delivery")}
+                                disabled={order.deliveryStatus!=="Picked"}
                             >
-                            Out for Delivery
+                                Out for Delivery
                             </button>
 
                             <button
-                            className="btn btn-success btn-sm"
-                            onClick={()=>updateStatus(order._id,"Delivered")}
-                            disabled={order.deliveryStatus!=="Out for Delivery"}
+                                className="btn btn-success"
+                                onClick={()=>updateStatus(order._id,"Delivered")}
+                                disabled={order.deliveryStatus!=="Out for Delivery"}
                             >
-                            Delivered
+                                Delivered
                             </button>
 
                         </div>
 
+                        {/* COD BUTTON */}
                         {
-order.paymentMethod === "COD" &&
-order.paymentStatus !== "Completed" &&
-order.deliveryStatus === "Delivered" && (
+                            order.paymentMethod === "COD" &&
+                            order.paymentStatus !== "Completed" &&
+                            order.deliveryStatus === "Delivered" && (
 
-<button
-className="btn btn-dark btn-sm mt-2"
-onClick={()=>updatePayment(order._id)}
->
-Mark Payment Received
-</button>
+                                <button
+                                    className="btn btn-dark mt-3 w-100"
+                                    onClick={()=>updatePayment(order._id)}
+                                >
+                                    💰 Mark Payment Received
+                                </button>
+                            )
+                        }
 
-)
-}
+                    </div>
 
-                </div>
                 ))
-            ) : (<p>No assigned orders</p>)
-            }
 
-    </div>
+            ) : (
+                <p className="text-center">No Assigned Orders</p>
+            )}
 
+        </div>
     )
-
 }
 
 export default AgentOrders;

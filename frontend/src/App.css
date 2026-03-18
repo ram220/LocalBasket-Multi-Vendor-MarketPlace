@@ -30,6 +30,26 @@
   background: rgb(220, 90, 0);
 }
 
+
+/*  admin orders */
+
+.card {
+  border-radius: 14px;
+}
+
+.card:hover {
+  transform: scale(1.01);
+  transition: 0.2s;
+}
+
+img {
+  object-fit: cover;
+}
+
+.badge {
+  font-size: 0.8rem;
+}
+
 @media (max-width: 576px) {
   .auth-card {
     padding: 20px !important;

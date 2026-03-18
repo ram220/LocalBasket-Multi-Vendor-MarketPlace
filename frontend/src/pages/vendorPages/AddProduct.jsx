@@ -193,13 +193,13 @@ function AddProduct() {
           >
             {/*{loading ? "Uploading..." : "Add"}*/}
             {loading ? (
-  <>
-    <span className="spinner-border spinner-border-sm me-2"></span>
-    Uploading...
-  </>
-) : (
-  "Add"
-)}
+              <>
+                <span className="spinner-border spinner-border-sm me-2"></span>
+                Uploading...
+              </>
+            ) : (
+              "Add"
+            )}
           </button>
         </form>
       </div>

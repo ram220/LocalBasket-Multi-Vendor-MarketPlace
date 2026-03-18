@@ -1,334 +1,240 @@
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
-function AdminOrders(){
+function AdminOrders() {
 
     const [orders,setOrders]=useState([]);
     const [currentPage,setCurrentPage]=useState(1);
     const [totalPages,setTotalPages]=useState(1);
-
     const [agents,setAgents] = useState([]);
 
-
-    const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
+    const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
     //const API_URL="http://localhost:8000";
     const token=localStorage.getItem("token");
 
     useEffect(()=>{
-
-        const fetchOrders=async()=>{
-
-            try{
-
-                const res=await axios.get(`${API_URL}/api/admin/getAllOrders?page=${currentPage}`,{
-                headers:{Authorization:`Bearer ${token}`}
-                })
-
-                setOrders(res.data.orders);
-                setCurrentPage(res.data.currentPage);
-                setTotalPages(res.data.totalPages);
-
-            }
-            catch(err){
-                alert("error fetching admin orders")
-            }
-
-        }
-
         fetchOrders();
         fetchAgents();
+    },[currentPage]);
 
-    },[currentPage,token]);
-
-    const handleOrderStatus = async(orderId,status)=>{
+    const fetchOrders = async ()=>{
         try{
+            const res=await axios.get(`${API_URL}/api/admin/getAllOrders?page=${currentPage}`,{
+                headers:{Authorization:`Bearer ${token}`}
+            });
 
-            await axios.patch(
-            `${API_URL}/api/admin/updateOrderStatus`,
-            {orderId,status},
-            {headers:{Authorization:`Bearer ${token}`}}
-            )
+            setOrders(res.data.orders);
+            setCurrentPage(res.data.currentPage);
+            setTotalPages(res.data.totalPages);
 
-            setOrders(prevOrders =>
-                prevOrders.map(order =>
-                    order._id === orderId
-                    ? {...order,orderStatus:status}
-                    : order
-                )
-            )
-
+        }catch{
+            alert("Error fetching orders");
         }
-        catch(err){
-            alert("Error updating order status")
-        }
-    }
-
+    };
 
     const fetchAgents = async()=>{
         const res = await axios.get(`${API_URL}/api/admin/getApprovedAgents`,{
             headers:{Authorization:`Bearer ${token}`}
         });
-
         setAgents(res.data.agents);
     };
 
+    const handleOrderStatus = async(orderId,status)=>{
+        await axios.patch(`${API_URL}/api/admin/updateOrderStatus`,
+        {orderId,status},
+        {headers:{Authorization:`Bearer ${token}`}});
+
+        fetchOrders();
+    };
 
     const handleAssignAgent = async(orderId,agentId)=>{
-    try{
-
         await axios.post(`${API_URL}/api/admin/assignDeliveryAgent`,
-            {orderId,agentId},
-            {headers:{Authorization:`Bearer ${token}`}}
-        )
+        {orderId,agentId},
+        {headers:{Authorization:`Bearer ${token}`}});
 
-        alert("Agent assigned successfully");
+        fetchOrders();
+    };
 
-        // REFRESH ORDERS
-        const res = await axios.get(`${API_URL}/api/admin/getAllOrders?page=${currentPage}`,{
-        headers:{Authorization:`Bearer ${token}`}
-        });
+    const badgeColor = (status)=>{
+        if(status==="Delivered") return "bg-success";
+        if(status==="Out for Delivery") return "bg-primary";
+        if(status==="Picked") return "bg-warning text-dark";
+        if(status==="Assigned") return "bg-info text-dark";
+        if(status==="Cancelled") return "bg-danger";
+        return "bg-secondary";
+    };
 
-        setOrders(res.data.orders);
+    return (
+        <div className="container mt-4">
 
-    }
-    catch(err){
-        alert("Error assigning agent");
-    }
-}
+            <h3 className="text-center mb-4" style={{color:"#fc6b03"}}>
+                Admin Orders
+            </h3>
 
+            {orders.length === 0 ? (
+                <p>No Orders</p>
+            ) : (
 
-    return(
+                orders.map(order => {
 
-        <div className="container-fluid mt-2 px-3">
+                    let vendorTotal={};
 
-            <h4>
-                <span style={{color:"rgb(252,107,3)"}}>All</span> Orders (Admin)
-            </h4>
+                    order.items.forEach(item=>{
+                        const vendor=item.productId?.vendorId?.shopName;
+                        if(!vendorTotal[vendor]) vendorTotal[vendor]=0;
+                        vendorTotal[vendor]+=item.price*item.quantity;
+                    });
 
-            {
-                orders.length===0 ?
-                    <p>No orders</p>
-                :
-                (
-                <>
+                    return (
 
-                    {
-                        orders.map(order=>{
+                        <div key={order._id} className="card shadow-lg mb-4 p-3">
 
-                            let vendorTotal={};
+                            {/* HEADER */}
+                            <div className="d-flex justify-content-between flex-wrap">
+                                <h6>Order ID: {order._id}</h6>
+                                <span className={`badge ${badgeColor(order.deliveryStatus)}`}>
+                                    {order.deliveryStatus}
+                                </span>
+                            </div>
 
-                            order.items.forEach(item=>{
-                                const vendorName=item.productId?.vendorId?.shopName;
+                            <hr/>
 
-                                if(!vendorTotal[vendorName]) vendorTotal[vendorName]=0;
+                            {/* USER INFO */}
+                            <div className="row">
+                                <div className="col-md-6">
+                                    <h6>User Details</h6>
+                                    <p><strong>{order.userId?.name}</strong></p>
+                                    <p>{order.userId?.email}</p>
+                                    <p>{order.userId?.mobile}</p>
+                                    <p>{order.userId?.address}</p>
+                                </div>
 
-                                vendorTotal[vendorName]+=item.price*item.quantity;
-                            })
+                                {/* PAYMENT */}
+                                <div className="col-md-6">
+                                    <h6>Payment</h6>
+                                    <p>Status: <span className="badge bg-success">{order.paymentStatus}</span></p>
+                                    <p>Method: <strong>{order.paymentMethod}</strong></p>
+                                    <p>Total: <strong>₹{order.totalAmount}</strong></p>
+                                </div>
+                            </div>
 
-                            return(
+                            <hr/>
 
-                                <div key={order._id} className="border p-3 mb-3 rounded">
+                            {/* AGENT */}
+                            <div className="mb-3">
+                                <h6>Delivery Agent</h6>
 
-                                    <h6>Order ID: {order._id}</h6>
-
-                                    <p>User:
-                                        <strong>
-                                            {order.userId?.name} ({order.userId?.email})
-                                        </strong>
+                                {order.deliveryAgentId ? (
+                                    <p className="badge bg-info text-dark">
+                                        {order.deliveryAgentId.name} ({order.deliveryAgentId.mobile})
                                     </p>
+                                ) : (
+                                    <select
+                                        className="form-select"
+                                        onChange={(e)=>handleAssignAgent(order._id,e.target.value)}
+                                    >
+                                        <option value="">Assign Agent</option>
+                                        {agents.map(a=>(
+                                            <option key={a._id} value={a._id}>
+                                                {a.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
+                            </div>
 
-                                    <p>Mobile: <strong>{order.userId?.mobile}</strong></p>
-                                    <p>Address: <strong>{order.userId?.address}</strong></p>
+                            {/* ORDER STATUS */}
+                            <div className="mb-3">
+                                <h6>Order Status</h6>
+                                <select
+                                    className="form-select w-50"
+                                    value={order.orderStatus}
+                                    onChange={(e)=>handleOrderStatus(order._id,e.target.value)}
+                                >
+                                    <option>Placed</option>
+                                    <option>Shipped</option>
+                                    <option>Delivered</option>
+                                    <option>Cancelled</option>
+                                </select>
+                            </div>
 
-                                    <p>Payment Status: <strong>{order.paymentStatus}</strong></p>
+                            <hr/>
 
-                                   {
-                                        !order.deliveryAgentId && (
+                            {/* PRODUCTS */}
+                            <h6>Products</h6>
 
-                                            <div className="mb-3">
-                                                <label><strong>Assign Delivery Agent</strong></label>
+                            {order.items.map(item=>(
+                                <div key={item._id} className="d-flex align-items-center mb-2 border rounded p-2">
 
-                                                <select
-                                                    className="form-control"
-                                                    onChange={(e)=>handleAssignAgent(order._id,e.target.value)}
-                                                >
+                                    <img src={item.productId?.image}
+                                        style={{height:"60px",width:"60px",borderRadius:"8px"}}
+                                    />
 
-                                                    <option value="">Select Agent</option>
+                                    <div className="ms-3">
+                                        <h6>{item.productId?.name}</h6>
 
-                                                        {agents.map(agent=>(
-                                                        <option key={agent._id} value={agent._id}>
-                                                        {agent.name}
-                                                    </option>
-                                                        ))}
+                                        <small>
+                                            Vendor: <strong>{item.productId?.vendorId?.shopName}</strong>
+                                        </small>
 
-                                                </select>
+                                        <br/>
 
-                                            </div>
+                                        ₹{item.price} × {item.quantity} = ₹{item.price * item.quantity}
 
-                                        )
-                                    }
+                                        <br/>
 
-                                    <p>Delivery Status:
-                                        <span className={`badge ms-2 ${
-                                        order.deliveryStatus === "Delivered"
-                                            ? "bg-success"
-                                            : order.deliveryStatus === "Out for Delivery"
-                                            ? "bg-primary"
-                                            : order.deliveryStatus === "Picked"
-                                            ? "bg-warning text-dark"
-                                            : order.deliveryStatus === "Assigned"
-                                            ? "bg-info text-dark"
-                                            : "bg-secondary"
-                                        }`}>
-                                            {order.deliveryStatus}
+                                        <span className={`badge ${badgeColor(item.status)}`}>
+                                            {item.status}
                                         </span>
-                                    </p>
-
-
-                                    <p>Delivery Agent:
-                                        <strong>
-                                            {order.deliveryAgentId
-                                            ? `${order.deliveryAgentId.name} (${order.deliveryAgentId.mobile})`
-                                            : "Not Assigned"}
-                                        </strong>
-                                    </p>
-                                    
-                                    <div className="mb-2">
-                                        <label><strong>Order Status</strong></label>
-
-                                        <select
-                                            className="form-control w-100 w-md-25"
-                                            value={order.orderStatus}
-                                            disabled={order.orderStatus==="Cancelled"}
-                                            onChange={(e)=>handleOrderStatus(order._id,e.target.value)}
-                                        >
-                                            <option value="Placed">Placed</option>
-                                            <option value="Shipped">Shipped</option>
-                                            <option value="Delivered">Delivered</option>
-                                            <option value="Cancelled">Cancelled</option>
-                                        </select>
-                                    </div>
-
-                                    <p>
-                                    Payment Method:
-                                        <strong>
-                                        {order.paymentMethod==="UPI" ? "UPI (Online)" : "Cash On Delivery"}
-                                        </strong>
-                                    </p>
-
-                                    <p>Date: {new Date(order.createdAt).toLocaleString()}</p>
-
-                                    <p>Total Amount: ₹{order.totalAmount}</p>
-
-                                    <hr/>
-
-                                    <h6>Products</h6>
-
-                                    <div className="row">
-
-                                        {
-                                            order.items.map(item=>(
-
-                                                <div key={item._id} className="col-12 col-md-6 d-flex align-items-center mb-2">
-
-                                                    <img
-                                                        src={item.productId?.image}
-                                                        alt=""
-                                                        style={{height:"60px",width:"60px",marginRight:"10px"}}
-                                                    />
-
-                                                    <div>
-
-                                            <h6>{item.productId?.name}</h6>
-
-                                            <small>
-
-                                                Vendor:
-                                                <strong>
-                                                {item.productId?.vendorId?.shopName}
-                                                </strong>
-
-                                            </small>
-
-                                            <br/>
-
-                                            ₹{item.price} × {item.quantity}
-
-                                            <br/>
-
-                                            Subtotal: ₹{item.price*item.quantity}
-
-                                            <br/>
-
-                                            Item Status:
-                                                <span className={`badge ms-2 ${
-                                                    item.status === "Ready"
-                                                    ? "bg-success"
-                                                    : item.status === "Delayed"
-                                                    ? "bg-warning text-dark"
-                                                    : item.status === "Cancelled"
-                                                    ? "bg-danger"
-                                                    : "bg-secondary"
-                                                }`}>
-                                                {item.status}
-                                            </span>
                                     </div>
 
                                 </div>
-                            ))
-                        }
+                            ))}
 
-                    </div>
+                            <hr/>
 
-                    <hr/>
+                            {/* VENDOR EARNINGS */}
+                            <h6>Vendor Earnings</h6>
 
-                    <h6>Vendor Earnings</h6>
+                            {Object.entries(vendorTotal).map(([vendor,total])=>(
+                                <p key={vendor}>
+                                    <strong>{vendor}</strong>: ₹{total}
+                                </p>
+                            ))}
 
-                    {
-                        Object.entries(vendorTotal).map(([vendor,total])=>(
+                            <small className="text-muted">
+                                {new Date(order.createdAt).toLocaleString()}
+                            </small>
 
-                            <p key={vendor}>
+                        </div>
+                    )
+                })
+            )}
 
-                            <strong>{vendor}</strong> earned ₹{total}
+            {/* PAGINATION */}
+            <div className="d-flex justify-content-between mt-3">
 
-                            </p>))
-                    }
+                <button
+                    className="btn btn-primary"
+                    onClick={()=>setCurrentPage(prev=>Math.max(prev-1,1))}
+                    disabled={currentPage===1}
+                >
+                    Previous
+                </button>
 
-                </div>
-                )})
-            }
+                <span>Page {currentPage} of {totalPages}</span>
 
-                        <div className="d-flex justify-content-between mt-3">
-
-                        <button
-                        className="btn btn-primary"
-                        onClick={()=>setCurrentPage(prev=>Math.max(prev-1,1))}
-                        disabled={currentPage===1}
-                        >
-                        Previous
-                        </button>
-
-                        <span>Page {currentPage} of {totalPages}</span>
-
-                        <button
-                            className="btn btn-primary"
-                            onClick={()=>setCurrentPage(prev=>Math.min(prev+1,totalPages))}
-                            disabled={currentPage===totalPages}
-                            >
-                            Next
-                        </button>
-
-                    </div>
-
-                </>
-
-            )
-            }
-
+                <button
+                    className="btn btn-primary"
+                    onClick={()=>setCurrentPage(prev=>Math.min(prev+1,totalPages))}
+                    disabled={currentPage===totalPages}
+                >
+                    Next
+                </button>
             </div>
 
-    )
-
+        </div>
+    );
 }
 
-export default AdminOrders
+export default AdminOrders;
