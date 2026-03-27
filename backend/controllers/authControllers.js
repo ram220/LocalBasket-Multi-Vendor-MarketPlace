@@ -447,7 +447,7 @@ exports.forgotPassword = async (req, res) => {
 
         const resetLink = `${process.env.DEPLOYED_URL}/reset-password/${resetToken}/${role}`;
 
-        sendEmail(
+        await sendEmail(
             user.email,
             "Reset Your Password",
             `Click here:\n${resetLink}`
@@ -457,7 +457,7 @@ exports.forgotPassword = async (req, res) => {
 
     } catch (err) {
         console.log(err)
-        res.status(500).json({ message: "Error sending reset link" });
+        res.status(500).json({ message: "Error sending reset link",err:err.message });
     }
 };
 
