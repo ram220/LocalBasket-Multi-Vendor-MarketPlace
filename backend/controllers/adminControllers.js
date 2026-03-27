@@ -361,7 +361,8 @@ exports.getApprovedAgents=async(req,res)=>{
     try{
         const agents=await DeliveryAgent.find({
             status:"approved",
-            isAvailable:true
+            isAvailable:true,
+            isBusy:false
         }).select("name email");
 
         res.status(200).json({
@@ -389,7 +390,16 @@ exports.assignDeliveryAgent=async(req,res)=>{
         order.deliveryAgentId=agentId;
         order.deliveryStatus="Assigned";
 
-        const agent = await DeliveryAgent.findById(order.deliveryAgentId);
+        const agent = await DeliveryAgent.findById(agentId);
+
+        agent.activeOrders += 1;
+
+        if (agent.activeOrders >= agent.maxOrdersLimit) {
+            agent.isBusy = true;
+        }
+
+        await agent.save();
+
 
         sendEmail(
             agent.email,

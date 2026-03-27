@@ -60,6 +60,18 @@ const deliveryAgentSchema=new mongoose.Schema({
     resetPasswordToken:String,
     resetPasswordExpire:Date,
     passwordChangedAt:Date,
+    activeOrders: {
+        type: Number,
+        default: 0
+    },
+    maxOrdersLimit: {
+        type: Number,
+        default: 2
+    },
+    isBusy: {
+        type: Boolean,
+        default: false
+    },
     role:{
         type:String,
         default:"delivery_agent"

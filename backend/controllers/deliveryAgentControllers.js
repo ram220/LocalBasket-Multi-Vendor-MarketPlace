@@ -1,5 +1,6 @@
 const DeliveryAgent=require('../models/deliveryAgentModel');
 const Orders=require('../models/ordersModel');
+const autoAssignAgent=require('../utils/orderAssignment')
 
 exports.getAssignedOrders=async(req,res)=>{
     try{
@@ -9,6 +10,7 @@ exports.getAssignedOrders=async(req,res)=>{
         }).populate("userId", "name mobile address")
             .populate("items.productId","name image price")
             .populate("items.vendorId","shopName mobile address")
+            .sort({createdAt:-1})
 
 
         res.status(200).json({
@@ -37,7 +39,28 @@ exports.updateDeliveryStatus=async(req,res)=>{
         order.deliveryStatus=status;
         if(status==="Delivered"){
             order.orderStatus="Delivered"
+            const agent = await DeliveryAgent.findById(order.deliveryAgentId);
+
+            if (agent) {
+                agent.activeOrders = Math.max(0, agent.activeOrders - 1);
+
+                if (agent.activeOrders < agent.maxOrdersLimit) {
+                    agent.isBusy = false;
+                }
+
+                await agent.save();
+            }
+
+            const pendingOrder = await Orders.findOne({
+                deliveryStatus: "Pending"
+            }).sort({ createdAt: 1 });
+    
+            if (pendingOrder) {
+                await autoAssignAgent(pendingOrder._id);
+            }
+
         }
+
 
         await order.save();
 

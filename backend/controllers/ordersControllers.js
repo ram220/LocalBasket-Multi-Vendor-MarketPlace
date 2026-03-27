@@ -6,6 +6,7 @@ const Vendors=require('../models/vendorModel');
 const DeliveryAgent=require('../models/deliveryAgentModel');
 const sendEmail=require('../utils/sendEmail');
 const Admin=require('../models/adminModel');
+const autoAssignAgent=require('../utils/orderAssignment');
 
 exports.placeOrder = async(req,res)=>{
     try{
@@ -50,7 +51,8 @@ exports.placeOrder = async(req,res)=>{
             quantity: item.quantity,
             price: finalPrice,
             image: product.image,
-            vendorId: product.vendorId
+            vendorId: product.vendorId,
+            status:"Placed"
         });
     }
 
@@ -92,6 +94,7 @@ exports.placeOrder = async(req,res)=>{
             paymentMethod:paymentMethod,
             paymentStatus:paymentStatus || "Pending"
         })
+
 
         // get unique vendor ids and emails
         const vendorIds = [...new Set(updatedItems.map(item => item.vendorId.toString()))];

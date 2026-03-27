@@ -75,7 +75,7 @@ const ordersSchema = new mongoose.Schema({
     },
     deliveryStatus:{
         type:String,
-        enum:["Not Assigned","Assigned","Picked","Out for Delivery","Delivered"],
+        enum:["Not Assigned","Assigned","Picked","Out for Delivery","Delivered","Pending"],
         default:"Not Assigned"
     }
 },{timestamps:true});

@@ -6,6 +6,7 @@ const {CloudinaryStorage}=require("multer-storage-cloudinary")
 const cloudinary=require("../config/cloudinary");
 const Orders = require('../models/ordersModel');
 const mongoose=require('mongoose')
+const autoAssignAgent=require('../utils/orderAssignment');
 // cloudinary storage for image instead of mutler
 
 const storage=new CloudinaryStorage({
@@ -324,6 +325,29 @@ exports.updateItemStatus=async(req,res)=>{
         item.status=status;
 
         await order.save();
+
+        const allCancelled = order.items.every(i => i.status === "Cancelled");
+
+            if (allCancelled) {
+                order.orderStatus = "Cancelled";
+                await order.save();
+                return res.status(200).json({
+                    message: "Order fully cancelled",
+                    order
+                });
+            }
+
+
+        // 🚀 Assign agent when ANY item becomes ready
+
+        const anyReady = order.items.some(i => i.status === "Ready");
+
+        // check if already assigned (avoid duplicate assignment)
+        if (anyReady && !order.deliveryAgentId) {
+            autoAssignAgent(order._id)
+                .then(() => console.log("Agent assigned"))
+                .catch(err => console.log("Auto assign error:", err));
+        }
 
         res.status(200).json({
             message: "Item status updated",
