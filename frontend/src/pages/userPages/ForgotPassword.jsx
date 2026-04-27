@@ -8,8 +8,8 @@ function ForgotPassword() {
   const [message,setMessage]=useState("");
   const [loading,setLoading]=useState(false);
 
-  const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
-  //const API_URL="http://localhost:8000";
+  //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
+  const API_URL="http://localhost:8000";
 
   const handleSubmit=async(e)=>{
     if(!email || !role){
@@ -28,6 +28,7 @@ function ForgotPassword() {
       setMessage(res.data.message);
     }
     catch(err){
+      console.log(err);
       setMessage(err.response?.data.message || "Something went wrong");
     }
     finally{

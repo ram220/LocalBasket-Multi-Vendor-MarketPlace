@@ -17,8 +17,8 @@ function AddProduct() {
 
   const [loading, setLoading] = useState(false);
 
-  const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
-  //const API_URL="http://localhost:8000";
+  //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
+  const API_URL="http://localhost:8000";
 
   const handleChange=(e)=>{
     setFormData({...formData, [e.target.name]: e.target.value})

@@ -9,8 +9,10 @@ function Login({setIsLoggedIn,fetchCart}) {
   const [role,setRole]=useState("user");
   const [errors,setErrors]=useState({});
 
-    const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
-    //const API_URL="http://localhost:8000"
+  const [loading,setLoading]=useState(false);
+
+    //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
+    const API_URL="http://localhost:8000"
 
 
   
@@ -18,7 +20,8 @@ function Login({setIsLoggedIn,fetchCart}) {
 
   const handleLogin=async(e)=>{
     e.preventDefault();
-
+    if(loading) return;
+    setLoading(true);
     const validationErrors=validateLogin(formData);
     if(Object.keys(validationErrors).length > 0){
       setErrors(validationErrors);
@@ -55,6 +58,9 @@ function Login({setIsLoggedIn,fetchCart}) {
     }
     catch(err){
       setErrors({general:err.response?.data.message || "login failed"});
+    }
+    finally{
+      setLoading(false)
     }
 
   }
@@ -95,8 +101,10 @@ function Login({setIsLoggedIn,fetchCart}) {
                 </select>
               </div>
 
-              <button className="btn auth-btn w-100" style={{ background: "rgb(252, 107, 3)", color: "#fff" }}>
-                Login
+              <button className="btn w-100"
+              disabled={loading}
+                style={{ background: loading ? "#ccc" : "rgb(252,107,3)", color: "#fff",cursor:loading?"not-allowed":"pointer" }}>
+                  {loading?"Wait...":"Login"}
               </button>
             </form>
 

@@ -12,8 +12,10 @@ function UserRegister() {
     mobile: "",
   })
 
-  const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
-  //const API_URL="http://localhost:8000"
+  const [loading, setLoading] = useState(false);
+
+  //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
+  const API_URL="http://localhost:8000"
 
   const [errors,setErrors]=useState({})
 
@@ -21,6 +23,9 @@ function UserRegister() {
 
   const handleSubmit=async(e)=>{
       e.preventDefault();
+
+      if(loading) return;
+      setLoading(true);
 
       const validationErrors = validateRegister(formData);
       if(Object.keys(validationErrors).length > 0){
@@ -38,6 +43,9 @@ function UserRegister() {
       catch(err){
         
         setErrors({general:err.response?.data.message || "error while creating user account"});
+      }
+      finally{
+        setLoading(false)
       }
   }
 
@@ -83,8 +91,10 @@ function UserRegister() {
               </div>
               {errors && <p className="text-danger text-center">{errors.mobile}</p>}
 
-              <button className="btn w-100" style={{ background: "rgb(252, 107, 3)", color: "#fff" }}>
-                Register
+              <button className="btn w-100"
+              disabled={loading}
+                style={{ background: loading ? "#ccc" : "rgb(252,107,3)", color: "#fff",cursor:loading?"not-allowed":"pointer" }}>
+                  {loading?"Registering...":"Register"}
               </button>
             </form>
             <p className="mt-3 text-center">

@@ -16,8 +16,10 @@ function VendorRegister() {
     mobile:""
   });
 
-  const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
-  //const API_URL="http://localhost:8000";
+  const [loading,setLoading]=useState(false)
+
+  //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
+  const API_URL="http://localhost:8000";
 
   const [errors,setErrors]=useState({});
 
@@ -25,6 +27,9 @@ function VendorRegister() {
 
   const handleSubmit=async(e)=>{
     e.preventDefault();
+    if(loading) return;
+    setLoading(true);
+
     const validateErrors = validateRegister(formData);
     if(Object.keys(validateErrors).length > 0){
       setErrors(validateErrors);
@@ -48,6 +53,9 @@ function VendorRegister() {
     catch(err){
       console.log(err);
       setErrors({general:err.response?.data.message || "error while creating vendor account"})
+    }
+    finally{
+      setLoading(false);
     }
 
   }
@@ -113,8 +121,10 @@ function VendorRegister() {
               </div>
               {errors.mobile && <p className="text-danger text-center">{errors.mobile}</p>}
 
-              <button className="btn w-100" style={{ background: "rgb(252, 107, 3)", color: "#fff" }}>
-                Register
+              <button className="btn w-100"
+              disabled={loading}
+                style={{ background: loading ? "#ccc" : "rgb(252,107,3)", color: "#fff",cursor:loading?"not-allowed":"pointer" }}>
+                  {loading?"Uploading...":"Register"}
               </button>
             </form>
             <p className="mt-3 text-center">

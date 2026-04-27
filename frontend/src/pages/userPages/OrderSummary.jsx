@@ -7,10 +7,12 @@ function OrderSummary({ cart,setCart }) {
   const [address,setAddress]=useState("");
   const [mobile,setMobile]=useState("");
 
+  const [loading,setLoading]=useState(false);
+
   const navigate=useNavigate()
   
-  const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
-  //const API_URL = "http://localhost:8000";
+  //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
+  const API_URL = "http://localhost:8000";
 
   const [paymentMethod,setPaymentMethod] = useState("COD");
 
@@ -46,6 +48,7 @@ function OrderSummary({ cart,setCart }) {
   const total = itemsTotal + DELIVERY_CHARGE;
 
   const handlePlaceOrder = async()=>{
+    if(loading) return;
     if(cart.length === 0){
         alert("Cart is empty, add items to cart and try");
         return;
@@ -55,6 +58,8 @@ function OrderSummary({ cart,setCart }) {
       alert("Minimum order amount is ₹200");
       return;
     }
+
+        setLoading(true);
 
     const orderData = {
         items: cart.map(item=>({
@@ -78,7 +83,7 @@ function OrderSummary({ cart,setCart }) {
 
         alert("Order placed Successfully");
         setCart([]);
-
+        
         return
       }
       if(paymentMethod==="UPI"){
@@ -119,6 +124,9 @@ function OrderSummary({ cart,setCart }) {
     catch(err){
       const message=err.response?.data.message || "something went wrong while placing your order";
       alert(message);
+    }
+    finally{
+      setLoading(false);
     }
   }
 
@@ -191,13 +199,14 @@ function OrderSummary({ cart,setCart }) {
               className="w-100"
               onClick={handlePlaceOrder}
               style={{
-                backgroundColor: "rgb(252, 107, 3)",
+                background: loading ? "#ccc" : "rgb(252,107,3)", color: "#fff",cursor:loading?"not-allowed":"pointer",
                 border: "1px solid rgb(252, 107, 3)",
                 height: "30px",
                 color: "white",
+
               }}
             >
-              Place Order
+              {loading?"Wait...":"Place Order"}
             </button>
           </div>
         </div>
