@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import API_URL from "../../config";
 
 function OrderSummary({ cart,setCart }) {
 
@@ -11,8 +12,6 @@ function OrderSummary({ cart,setCart }) {
 
   const navigate=useNavigate()
   
-  //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
-  const API_URL = "http://localhost:8000";
 
   const [paymentMethod,setPaymentMethod] = useState("COD");
 

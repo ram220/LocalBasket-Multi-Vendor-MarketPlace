@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { validateRegister } from "../../utils/validateRegister";
 import axios from "axios";
+import API_URL from "../../config";
 
 function VendorRegister() {
   const [formData,setFormData]=useState({
@@ -18,8 +19,6 @@ function VendorRegister() {
 
   const [loading,setLoading]=useState(false)
 
-  //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
-  const API_URL="http://localhost:8000";
 
   const [errors,setErrors]=useState({});
 

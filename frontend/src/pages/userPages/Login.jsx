@@ -3,6 +3,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { validateLogin } from "../../utils/validateLogin";
+import API_URL from "../../config";
 
 function Login({setIsLoggedIn,fetchCart}) {
   const [formData,setFormData]=useState({email:"",password:""});
@@ -10,10 +11,6 @@ function Login({setIsLoggedIn,fetchCart}) {
   const [errors,setErrors]=useState({});
 
   const [loading,setLoading]=useState(false);
-
-    //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
-    const API_URL="http://localhost:8000"
-
 
   
   const navigate=useNavigate();

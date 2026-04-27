@@ -1,5 +1,6 @@
 import {React, useEffect, useState} from 'react';
 import {BrowserRouter,Routes,Route} from 'react-router-dom'
+import API_URL from './config';
 import Home from './pages/userPages/Home';
 import Login from './pages/userPages/Login';
 import UserRegister from './pages/userPages/UserRegister';
@@ -37,8 +38,6 @@ import AgentDashboard from './pages/deliveryPartnerPages/AgentDashboard';
 
 function App() {
 
-  //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com";
-  const API_URL="http://localhost:8000";
 
 const [isLoggedIn, setIsLoggedIn] = useState(() => {
   const token = localStorage.getItem("token");

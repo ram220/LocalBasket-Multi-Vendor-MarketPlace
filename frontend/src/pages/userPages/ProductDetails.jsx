@@ -4,12 +4,10 @@ import './ProductDetails.css'
 import { useParams, useNavigate } from "react-router-dom";
 import Footer from "../../components/userComponents/Footer";
 import { useOutletContext } from "react-router-dom";
+import API_URL from "../../config";
 
 function ProductDetails() {
   const { productId } = useParams();
-
-  //const API_URL="https://localbasket-multi-vendor-marketplace.onrender.com"
-  const API_URL = "http://localhost:8000";
 
   const {fetchCart} = useOutletContext();
 
